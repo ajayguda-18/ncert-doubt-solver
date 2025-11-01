@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCERT Doubt-Solver - AI Study Companion</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .logo-text h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .logo-text p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+        }
+
+        .status-dot.disconnected {
+            background: #ef4444;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-group select {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .filter-group select option {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: linear-gradient(to bottom, #f8fafc, #e0e7ff);
+        }
+
+        .messages {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .welcome-icon {
+            font-size: 96px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .welcome-screen h2 {
+            font-size: 36px;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .welcome-screen p {
+            font-size: 18px;
+            color: #64748b;
+            margin-bottom: 40px;
+        }
+
+        .example-questions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .example-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .example-card .emoji {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .example-card .text {
+            color: #334155;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        /* Message Bubbles */
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 20px 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot .message-bubble {
+            background: white;
+            color: #1e293b;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.bot.error .message-bubble {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .message-content {
+            line-height: 1.6;
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+        }
+
+        .citations {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .citations-title {
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .citation-card {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .citation-header {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .citation-meta {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .citation-text {
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .message-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .confidence-badge {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .confidence-badge.high {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .confidence-badge.low {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .feedback-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .feedback-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 25px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 200px;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Input Area */
+        .input-container {
+            background: white;
+            padding: 25px 30px;
+            border-top: 2px solid #e5e7eb;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.05);
+        }
+
+        .input-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            gap: 15px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 18px 25px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-button {
+            padding: 18px 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        /* Scrollbar */
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .filters {
+                justify-content: center;
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .example-questions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div class="logo-section">
+                    <div class="logo-icon">📚</div>
+                    <div class="logo-text">
+                        <h1>NCERT Doubt-Solver</h1>
+                        <p>✨ Your AI-powered study companion</p>
+                    </div>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Checking...</span>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <span>🎓</span>
+                    <select id="gradeSelect">
+                        <option value="5">Grade 5</option>
+                        <option value="6">Grade 6</option>
+                        <option value="7">Grade 7</option>
+                        <option value="8" selected>Grade 8</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <span>📖</span>
+                    <select id="subjectSelect">
+                        <option value="math" selected>📐 Mathematics</option>
+                        <option value="science">🔬 Science</option>
+                        <option value="social_science">🌍 Social Science</option>
+                        <option value="english">📚 English</option>
+                        <option value="hindi">🇮🇳 Hindi</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <span>🌐</span>
+                    <select id="languageSelect">
+                        <option value="english" selected>English</option>
+                        <option value="hindi">हिंदी</option>
+                        <option value="urdu">اردو</option>
+                        <option value="marathi">मराठी</option>
+                        <option value="tamil">தமிழ்</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-container" id="chatContainer">
+            <div class="messages" id="messagesContainer">
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-icon">🎓✨</div>
+                    <h2>Welcome to NCERT Doubt-Solver!</h2>
+                    <p>Ask any question from your NCERT textbooks and get instant answers with citations</p>
+                    
+                    <div class="example-questions">
+                        <div class="example-card" onclick="useExample('What is the Pythagorean theorem?', 'math', 8)">
+                            <div class="emoji">📐</div>
+                            <div class="text">"What is the Pythagorean theorem?"</div>
+                        </div>
+                        <div class="example-card" onclick="useExample('Explain photosynthesis', 'science', 6)">
+                            <div class="emoji">🌱</div>
+                            <div class="text">"Explain photosynthesis"</div>
+                        </div>
+                        <div class="example-card" onclick="useExample('Who was Akbar?', 'social_science', 7)">
+                            <div class="emoji">👑</div>
+                            <div class="text">"Who was Akbar?"</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    class="input-field" 
+                    placeholder="✨ Ask your doubt here..."
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button id="sendButton" class="send-button" onclick="sendMessage()">
+                    <span>✈️</span>
+                    <span>Send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:8000';
+        let isLoading = false;
+
+        // Check API health on load
+        window.addEventListener('load', checkApiHealth);
+
+        async function checkApiHealth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    document.getElementById('statusDot').className = 'status-dot connected';
+                    document.getElementById('statusText').textContent = 'Connected';
+                } else {
+                    throw new Error('API not healthy');
+                }
+            } catch (error) {
+                document.getElementById('statusDot').className = 'status-dot disconnected';
+                document.getElementById('statusText').textContent = 'Backend Offline';
+            }
+        }
+
+        function useExample(text, subject, grade) {
+            document.getElementById('messageInput').value = text;
+            document.getElementById('subjectSelect').value = subject;
+            document.getElementById('gradeSelect').value = grade;
+            document.getElementById('messageInput').focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !isLoading) {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || isLoading) return;
+
+            const grade = parseInt(document.getElementById('gradeSelect').value);
+            const subject = document.getElementById('subjectSelect').value;
+            const language = document.getElementById('languageSelect').value;
+
+            // Hide welcome screen
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            if (welcomeScreen) {
+                welcomeScreen.remove();
+            }
+
+            // Add user message
+            addMessage('user', message);
+            
+            // Clear input
+            input.value = '';
+            
+            // Show loading
+            isLoading = true;
+            updateSendButton();
+            showLoading();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: message,
+                        grade: grade,
+                        subject: subject,
+                        language: language
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    addMessage('bot', data.answer, data.citations, data.confidence, data.latency_ms, data.conversation_id);
+                } else {
+                    addMessage('bot', data.detail || 'An error occurred', null, null, null, null, true);
+                }
+            } catch (error) {
+                addMessage('bot', 'Cannot connect to server. Make sure the backend is running at http://localhost:8000', null, null, null, null, true);
+            } finally {
+                removeLoading();
+                isLoading = false;
+                updateSendButton();
+            }
+        }
+
+        function addMessage(type, content, citations = null, confidence = null, latency = null, conversationId = null, isError = false) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}${isError ? ' error' : ''}`;
+
+            let citationsHTML = '';
+            if (citations && citations.length > 0) {
+                citationsHTML = `
+                    <div class="citations">
+                        <div class="citations-title">📚 Sources:</div>
+                        ${citations.map(c => `
+                            <div class="citation-card">
+                                <div class="citation-header">[Source ${c.source_id}]</div>
+                                <div class="citation-meta">Grade ${c.grade} • ${formatSubject(c.subject)} • Page ${c.page_number}</div>
+                                <div class="citation-text">${c.text}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            let footerHTML = '';
+            if (type === 'bot' && !isError) {
+                footerHTML = `
+                    <div class="message-footer">
+                        <div>
+                            ${confidence ? `<span class="confidence-badge ${confidence}">${confidence === 'high' ? '✓ High confidence' : '⚠ Low confidence'}</span>` : ''}
+                            ${latency ? `<span style="color: #64748b; margin-left: 10px;">⚡ ${Math.round(latency)}ms</span>` : ''}
+                        </div>
+                        ${conversationId ? `
+                            <div class="feedback-buttons">
+                                <button class="feedback-btn" onclick="submitFeedback('${conversationId}', 5)" title="Good answer">👍</button>
+                                <button class="feedback-btn" onclick="submitFeedback('${conversationId}', 1)" title="Bad answer">👎</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            const timestamp = new Date().toLocaleTimeString();
+
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-content">${content}</div>
+                    ${citationsHTML}
+                    ${footerHTML}
+                    <div style="font-size: 11px; color: ${type === 'user' ? 'rgba(255,255,255,0.7)' : '#94a3b8'}; margin-top: 10px;">
+                        ${timestamp}
+                    </div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function showLoading() {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot';
+            loadingDiv.id = 'loadingMessage';
+            loadingDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <span>AI is thinking...</span>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingDiv);
+            scrollToBottom();
+        }
+
+        function removeLoading() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
+        }
+
+        function updateSendButton() {
+            const button = document.getElementById('sendButton');
+            button.disabled = isLoading;
+            button.innerHTML = isLoading ? 
+                '<div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div><span>Sending...</span>' :
+                '<span>✈️</span><span>Send</span>';
+        }
+
+        async function submitFeedback(conversationId, rating) {
+            try {
+                await fetch(`${API_BASE_URL}/feedback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        conversation_id: conversationId,
+                        rating: rating
+                    })
+                });
+                alert('Thank you for your feedback!');
+            } catch (error) {
+                console.error('Feedback error:', error);
+            }
+        }
+
+        function formatSubject(subject) {
+            if (!subject) return '';
+            return subject.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        function scrollToBottom() {
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
